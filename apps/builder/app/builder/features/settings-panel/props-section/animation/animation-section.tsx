@@ -10,30 +10,13 @@ import {
   Tooltip,
   ToggleGroupButton,
   Text,
-  IconButton,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  rawTheme,
-  CssValueListItem,
-  SmallToggleButton,
-  SmallIconButton,
 } from "@webstudio-is/design-system";
 import { useIds } from "~/shared/form-utils";
 import type { PropAndMeta } from "../use-props-logic";
 import type { AnimationAction, AnimationActionScroll } from "@webstudio-is/sdk";
 import { toPascalCase } from "~/builder/features/style-panel/shared/keyword-utils";
 import { animationActionSchema } from "@webstudio-is/sdk";
-import {
-  EyeClosedIcon,
-  EyeOpenIcon,
-  MinusIcon,
-  PlusIcon,
-  RepeatColumnIcon,
-  RepeatRowIcon,
-} from "@webstudio-is/icons";
+import { RepeatColumnIcon, RepeatRowIcon } from "@webstudio-is/icons";
 import { useState } from "react";
 import {
   $instances,
@@ -45,18 +28,7 @@ import { getInstanceLabel } from "~/shared/instance-utils";
 import { toValue } from "@webstudio-is/css-engine";
 import { nanoid } from "nanoid";
 import { setListedCssProperty } from "./set-css-property";
-import {
-  newFadeInScrollAnimation,
-  newFadeOutScrollAnimation,
-  newScrollAnimation,
-  type ScrollAnimation,
-} from "./new-scroll-animations";
-import {
-  newFadeInViewAnimation,
-  newFadeOutViewAnimation,
-  newViewAnimation,
-  type ViewAnimation,
-} from "./new-view-animations";
+import { AnimationsSelect } from "./animations-select";
 
 const animationTypeDescription: Record<AnimationAction["type"], string> = {
   scroll:
@@ -115,18 +87,6 @@ const animationSourceDescriptions: Record<
 const animationSources = Object.keys(
   animationSourceDescriptions
 ) as NonNullable<AnimationActionScroll["source"]>[];
-
-const newAnimationsPerType: {
-  scroll: ScrollAnimation[];
-  view: ViewAnimation[];
-} = {
-  scroll: [
-    newScrollAnimation,
-    newFadeInScrollAnimation,
-    newFadeOutScrollAnimation,
-  ],
-  view: [newViewAnimation, newFadeInViewAnimation, newFadeOutViewAnimation],
-};
 
 const initSubjects = () => {
   const selectedInstanceSelector = $selectedInstanceSelector.get();
@@ -196,10 +156,6 @@ export const AnimateSection = ({
 }) => {
   const [subjects] = useState(() => initSubjects());
 
-  const [newAnimationHint, setNewAnimationHint] = useState<string | undefined>(
-    undefined
-  );
-
   const fieldIds = useIds([
     "type",
     "subject",
@@ -211,8 +167,6 @@ export const AnimateSection = ({
 
   const value: AnimationAction =
     prop?.type === "animationAction" ? prop.value : defaultActionValue;
-
-  const newAnimations = newAnimationsPerType[value.type];
 
   return (
     <Grid
@@ -396,113 +350,11 @@ export const AnimateSection = ({
           </Grid>
         )}
 
-        <Grid
-          gap={1}
-          align={"center"}
-          css={{ gridTemplateColumns: "1fr auto" }}
-        >
-          <Label htmlFor={fieldIds.addAnimation}>
-            <Text variant={"titles"}>Animations</Text>
-          </Label>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <IconButton id={fieldIds.addAnimation}>
-                <PlusIcon />
-              </IconButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              sideOffset={Number.parseFloat(rawTheme.spacing[5])}
-              css={{ width: theme.spacing[25] }}
-            >
-              {newAnimations.map((animation, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  onSelect={() => {
-                    // Create new animation
-                    console.info(animation);
-                    const newValue = {
-                      ...value,
-                      animations: value.animations.concat(animation),
-                    };
-
-                    const parsedValue =
-                      animationActionSchema.safeParse(newValue);
-
-                    if (parsedValue.success) {
-                      onChange(parsedValue.data);
-                    }
-                  }}
-                  onFocus={() => setNewAnimationHint(animation.description)}
-                  onBlur={() => setNewAnimationHint(undefined)}
-                >
-                  {animation.name}
-                </DropdownMenuItem>
-              ))}
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem css={{ display: "grid" }} hint>
-                {newAnimations.map(({ description }, index) => (
-                  <Box
-                    css={{
-                      gridColumn: "1",
-                      gridRow: "1",
-                      visibility: "hidden",
-                    }}
-                    key={index}
-                  >
-                    {description}
-                  </Box>
-                ))}
-                <Box
-                  css={{
-                    gridColumn: "1",
-                    gridRow: "1",
-                  }}
-                >
-                  {newAnimationHint ?? "Add new or select existing animation"}
-                </Box>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Grid gap={1} css={{ gridColumn: "span 2" }}>
-            {value.animations.map((animation, index) => (
-              <CssValueListItem
-                label={
-                  <Label disabled={false} truncate>
-                    {animation.name ?? "Unnamed"}
-                  </Label>
-                }
-                hidden={false}
-                draggable
-                state={undefined}
-                index={index}
-                id={String(index)}
-                buttons={
-                  <>
-                    <SmallToggleButton
-                      pressed={false}
-                      onPressedChange={() => {}}
-                      variant="normal"
-                      tabIndex={-1}
-                      icon={
-                        // eslint-disable-next-line no-constant-condition
-                        false ? <EyeClosedIcon /> : <EyeOpenIcon />
-                      }
-                    />
-
-                    <SmallIconButton
-                      variant="destructive"
-                      tabIndex={-1}
-                      icon={<MinusIcon />}
-                    />
-                  </>
-                }
-              />
-            ))}
-          </Grid>
-        </Grid>
+        <AnimationsSelect
+          value={value}
+          onChange={onChange}
+          fieldId={fieldIds.addAnimation}
+        />
       </Grid>
     </Grid>
   );
