@@ -17,18 +17,8 @@ import type { AnimationAction, AnimationActionScroll } from "@webstudio-is/sdk";
 import { toPascalCase } from "~/builder/features/style-panel/shared/keyword-utils";
 import { animationActionSchema } from "@webstudio-is/sdk";
 import { RepeatColumnIcon, RepeatRowIcon } from "@webstudio-is/icons";
-import { useState } from "react";
-import {
-  $instances,
-  $registeredComponentMetas,
-  $selectedInstanceSelector,
-} from "~/shared/nano-states";
-import { getInstanceStyleDecl } from "~/builder/features/style-panel/shared/model";
-import { getInstanceLabel } from "~/shared/instance-utils";
-import { toValue } from "@webstudio-is/css-engine";
-import { nanoid } from "nanoid";
-import { setListedCssProperty } from "./set-css-property";
 import { AnimationsSelect } from "./animations-select";
+import { SubjectSelect } from "./subject-select";
 
 const animationTypeDescription: Record<AnimationAction["type"], string> = {
   scroll:
@@ -88,65 +78,6 @@ const animationSources = Object.keys(
   animationSourceDescriptions
 ) as NonNullable<AnimationActionScroll["source"]>[];
 
-const initSubjects = () => {
-  const selectedInstanceSelector = $selectedInstanceSelector.get();
-  const instances = $instances.get();
-  const metas = $registeredComponentMetas.get();
-
-  if (selectedInstanceSelector === undefined) {
-    return [];
-  }
-
-  if (selectedInstanceSelector.length === 0) {
-    return [];
-  }
-
-  const subjects = [
-    {
-      value: "self",
-      label: "Self",
-      isTimelineExists: true,
-      instanceId: selectedInstanceSelector.at(0)!,
-    },
-  ];
-
-  for (
-    let selector = selectedInstanceSelector.slice(1); // Self is already added
-    selector.length !== 0;
-    selector = selector.slice(1)
-  ) {
-    const styleDecl = getInstanceStyleDecl("viewTimelineName", selector);
-    const instanceId = selector.at(0)!;
-
-    const instance = instances.get(selector[0]);
-    if (instance === undefined) {
-      continue;
-    }
-    const meta = metas.get(instance.component);
-
-    if (meta === undefined) {
-      continue;
-    }
-
-    const viewTimelineName = toValue(styleDecl.computedValue);
-
-    const isTimelineExists = viewTimelineName.startsWith("--");
-
-    const value = isTimelineExists
-      ? viewTimelineName
-      : `--generated-timeline-${nanoid()}`;
-
-    subjects.push({
-      value,
-      label: getInstanceLabel(instance, meta),
-      isTimelineExists,
-      instanceId,
-    });
-  }
-
-  return subjects;
-};
-
 export const AnimateSection = ({
   animationAction,
   onChange,
@@ -154,8 +85,6 @@ export const AnimateSection = ({
   animationAction: PropAndMeta;
   onChange: (value: AnimationAction) => void;
 }) => {
-  const [subjects] = useState(() => initSubjects());
-
   const fieldIds = useIds([
     "type",
     "subject",
@@ -300,52 +229,11 @@ export const AnimateSection = ({
             align={"center"}
             css={{ gridTemplateColumns: "1fr 1fr" }}
           >
-            <Label htmlFor={fieldIds.subject}>Scroll Subject</Label>
-
-            <Select
+            <Label htmlFor={fieldIds.subject}>Subject</Label>
+            <SubjectSelect
               id={fieldIds.subject}
-              options={subjects.map((subject) => subject.value)}
-              value={value.subject ?? "self"}
-              getLabel={(subject) =>
-                subjects.find((s) => s.value === subject)?.label ?? "-"
-              }
-              onChange={(subject) => {
-                const newValue = {
-                  ...value,
-                  subject: subject === "self" ? undefined : subject,
-                };
-                const parsedValue = animationActionSchema.safeParse(newValue);
-
-                if (parsedValue.success) {
-                  const subject = subjects.find(
-                    (s) => s.value === newValue.subject
-                  );
-
-                  if (subject === undefined) {
-                    toast.error(`Subject "${newValue.subject}" not found`);
-                    return;
-                  }
-
-                  if (
-                    subject.isTimelineExists === false &&
-                    newValue.subject !== undefined
-                  ) {
-                    setListedCssProperty(
-                      subject.instanceId,
-                      "viewTimelineName",
-                      {
-                        type: "unparsed",
-                        value: newValue.subject,
-                      }
-                    );
-                  }
-
-                  onChange(parsedValue.data);
-                  return;
-                }
-
-                toast.error("Schemas are incompatible, try fix");
-              }}
+              value={value}
+              onChange={onChange}
             />
           </Grid>
         )}
