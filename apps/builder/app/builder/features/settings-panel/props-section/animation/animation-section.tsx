@@ -85,12 +85,7 @@ export const AnimateSection = ({
   animationAction: PropAndMeta;
   onChange: (value: AnimationAction) => void;
 }) => {
-  const fieldIds = useIds([
-    "type",
-    "subject",
-    "source",
-    "addAnimation",
-  ] as const);
+  const fieldIds = useIds(["type", "subject", "source"] as const);
 
   const { prop } = animationAction;
 
@@ -238,11 +233,7 @@ export const AnimateSection = ({
           </Grid>
         )}
 
-        <AnimationsSelect
-          value={value}
-          onChange={onChange}
-          fieldId={fieldIds.addAnimation}
-        />
+        <AnimationsSelect value={value} onChange={onChange} />
       </Grid>
     </Grid>
   );

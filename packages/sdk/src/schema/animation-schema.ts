@@ -140,6 +140,12 @@ const baseAnimation = z.object({
   keyframes: z.array(animationKeyframeSchema),
 });
 
+export const scrollAnimationSchema = baseAnimation.merge(
+  z.object({
+    timing: keyframeEffectOptionsSchema.merge(scrollRangeOptionsSchema),
+  })
+);
+
 // Scroll Action
 export const scrollActionSchema = z.object({
   type: z.literal("scroll"),
@@ -147,27 +153,21 @@ export const scrollActionSchema = z.object({
     .union([z.literal("closest"), z.literal("nearest"), z.literal("root")])
     .optional(),
   axis: animationAxisSchema.optional(),
-  animations: z.array(
-    baseAnimation.merge(
-      z.object({
-        timing: keyframeEffectOptionsSchema.merge(scrollRangeOptionsSchema),
-      })
-    )
-  ),
+  animations: z.array(scrollAnimationSchema),
 });
+
+export const viewAnimationSchema = baseAnimation.merge(
+  z.object({
+    timing: keyframeEffectOptionsSchema.merge(viewRangeOptionsSchema),
+  })
+);
 
 // View Action
 export const viewActionSchema = z.object({
   type: z.literal("view"),
   subject: z.string().optional(),
   axis: animationAxisSchema.optional(),
-  animations: z.array(
-    baseAnimation.merge(
-      z.object({
-        timing: keyframeEffectOptionsSchema.merge(viewRangeOptionsSchema),
-      })
-    )
-  ),
+  animations: z.array(viewAnimationSchema),
 });
 
 // Animation Action
@@ -194,3 +194,5 @@ export type ViewRangeValue = z.infer<typeof viewRangeValueSchema>;
 export type AnimationActionScroll = z.infer<typeof scrollActionSchema>;
 export type AnimationActionView = z.infer<typeof viewActionSchema>;
 export type AnimationAction = z.infer<typeof animationActionSchema>;
+export type ScrollAnimation = z.infer<typeof scrollAnimationSchema>;
+export type ViewAnimation = z.infer<typeof viewAnimationSchema>;

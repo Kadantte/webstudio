@@ -35,6 +35,12 @@ export type {
   ScrollRangeValue,
   ViewNamedRange,
   ViewRangeValue,
+  ScrollAnimation,
+  ViewAnimation,
 } from "./schema/animation-schema";
 
-export { animationActionSchema } from "./schema/animation-schema";
+export {
+  animationActionSchema,
+  scrollAnimationSchema,
+  viewAnimationSchema,
+} from "./schema/animation-schema";

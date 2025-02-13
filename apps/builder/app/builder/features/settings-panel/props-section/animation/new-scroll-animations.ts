@@ -1,7 +1,5 @@
 import { parseCssValue } from "@webstudio-is/css-data";
-import type { AnimationActionScroll } from "@webstudio-is/sdk";
-
-export type ScrollAnimation = AnimationActionScroll["animations"][number];
+import type { ScrollAnimation } from "@webstudio-is/sdk";
 
 export const newScrollAnimation: ScrollAnimation = {
   name: "New Animation",
@@ -26,7 +24,7 @@ export const newFadeInScrollAnimation: ScrollAnimation = {
 
   timing: {
     rangeStart: ["start", { type: "unit", value: 0, unit: "%" }],
-    rangeEnd: ["end", { type: "unit", value: 50, unit: "dvh" }],
+    rangeEnd: ["start", { type: "unit", value: 50, unit: "dvh" }],
     fill: "backwards",
   },
   keyframes: [

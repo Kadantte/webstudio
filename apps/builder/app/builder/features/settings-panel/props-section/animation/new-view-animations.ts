@@ -1,7 +1,5 @@
 import { parseCssValue } from "@webstudio-is/css-data";
-import type { AnimationActionView } from "@webstudio-is/sdk";
-
-export type ViewAnimation = AnimationActionView["animations"][number];
+import type { ViewAnimation } from "@webstudio-is/sdk";
 
 export const newViewAnimation: ViewAnimation = {
   name: "New Animation",
