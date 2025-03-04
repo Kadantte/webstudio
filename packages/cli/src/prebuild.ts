@@ -17,7 +17,6 @@ import { log, spinner } from "@clack/prompts";
 import merge from "deepmerge";
 import {
   generateWebstudioComponent,
-  getIndexesWithinAncestors,
   type Params,
   normalizeProps,
   generateRemixRoute,
@@ -48,6 +47,7 @@ import {
   coreMetas,
   SYSTEM_VARIABLE_ID,
   generateCss,
+  ROOT_INSTANCE_ID,
 } from "@webstudio-is/sdk";
 import type { Data } from "@webstudio-is/http-client";
 import { LOCAL_DATA_FILE } from "./config";
@@ -314,6 +314,8 @@ export const prebuild = async (options: {
       instanceMap,
       page.rootInstanceId
     );
+    // support global data variables
+    pageInstanceSet.add(ROOT_INSTANCE_ID);
     const instances: [Instance["id"], Instance][] =
       siteData.build.instances.filter(([id]) => pageInstanceSet.has(id));
     const dataSources: [DataSource["id"], DataSource][] = [];
@@ -603,11 +605,7 @@ export const prebuild = async (options: {
       props,
       dataSources,
       classesMap: classes,
-      indexesWithinAncestors: getIndexesWithinAncestors(
-        projectMetas,
-        instances,
-        [rootInstanceId]
-      ),
+      metas: projectMetas,
     });
 
     const projectMeta = siteData.build.pages.meta;
